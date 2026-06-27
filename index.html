@@ -1368,25 +1368,30 @@ function doLogin(){
   if(!u||!p){ errEl.textContent='กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'; errEl.style.display='block'; return; }
   errEl.style.display='none';
   btn.disabled=true; btn.textContent='กำลังเข้าสู่ระบบ...';
-  google.script.run
-    .withSuccessHandler(function(res){
-      btn.disabled=false; btn.textContent='เข้าสู่ระบบ';
-      if(res.success){
-        currentUser={login:res.login,role:res.role};
-        document.getElementById('login-screen').style.display='none';
-        initApp();
-      } else {
-        errEl.textContent=res.error||'เข้าสู่ระบบไม่สำเร็จ';
-        errEl.style.display='block';
-        document.getElementById('login-password').value='';
-      }
-    })
-    .withFailureHandler(function(e){
-      btn.disabled=false; btn.textContent='เข้าสู่ระบบ';
-      errEl.textContent='เกิดข้อผิดพลาด: '+e.message;
+
+  fetch('https://27.131.179.220/restaurant-os/api/api.php', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action:'login', username:u, password:p})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    btn.disabled=false; btn.textContent='เข้าสู่ระบบ';
+    if(res.success){
+      currentUser={login:res.login, role:res.role};
+      document.getElementById('login-screen').style.display='none';
+      initApp();
+    } else {
+      errEl.textContent=res.error||'เข้าสู่ระบบไม่สำเร็จ';
       errEl.style.display='block';
-    })
-    .login(u,p);
+      document.getElementById('login-password').value='';
+    }
+  })
+  .catch(function(e){
+    btn.disabled=false; btn.textContent='เข้าสู่ระบบ';
+    errEl.textContent='เกิดข้อผิดพลาด: '+e.message;
+    errEl.style.display='block';
+  });
 }
 
 function doLogout(){
