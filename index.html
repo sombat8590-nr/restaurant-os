@@ -1454,33 +1454,36 @@ function _stopOrdersPoll(){
 
 function initApp(){
   document.getElementById('sidebar-username-text').textContent=currentUser.login+' ('+_roleLabel(currentUser.role)+')';
-  // dmadmin เข้า superadmin ได้ทันทีโดยไม่ต้องใส่รหัสซ้ำ
   if(currentUser.role==='dmadmin') superAdminUnlocked=true;
-  // owner เข้า dashboard ได้ทันทีโดยไม่ต้องใส่รหัสผ่าน
   if(currentUser.role==='owner' || currentUser.role==='dmadmin') dashboardUnlocked=true;
-  // ซ่อน dashboard gate ทันทีสำหรับ owner/dmadmin
   if(dashboardUnlocked){
     const gate=document.getElementById('dashboard-gate');
     const content=document.getElementById('dashboard-content');
     if(gate) gate.style.display='none';
     if(content) content.style.display='block';
   }
-  google.script.run
-    .withSuccessHandler(function(d){
-      navbarItems=d.navbar||[]; menuItems=d.menu||[]; tables=d.tables||[];
-      discounts=d.discounts||[]; categories=d.categories||[]; staffList=d.staff||[];
-      dmContacts=d.dmContacts||[];
-      if(d.qrBanking){ qrBankingUrl=d.qrBanking.url||''; qrBankingNote=d.qrBanking.note||''; }
-      renderNavbarForRole();
-      applySettings(d.settings||{});
-      renderMenu(); renderTableSelect(); renderDiscountSelect(); renderStaffSelect();
-      const _cb=document.getElementById('mobile-cart-bar');
-      if(_cb&&currentPage!=='order') _cb.classList.add('cart-bar-hidden');
-      updateCartInfo();
-      _startOrdersPoll(); // เริ่ม auto-refresh
-    })
-    .withFailureHandler(e=>console.error('initApp:',e))
-    .getInitData();
+
+  // ← แก้ตรงนี้จาก google.script.run เป็น fetch()
+  fetch('https://27.131.179.220/restaurant-os/api/api.php', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action:'getInitData'})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    navbarItems=d.navbar||[]; menuItems=d.menu||[]; tables=d.tables||[];
+    discounts=d.discounts||[]; categories=d.categories||[]; staffList=d.staff||[];
+    dmContacts=d.dmContacts||[];
+    if(d.qrBanking){ qrBankingUrl=d.qrBanking.url||''; qrBankingNote=d.qrBanking.note||''; }
+    renderNavbarForRole();
+    applySettings(d.settings||{});
+    renderMenu(); renderTableSelect(); renderDiscountSelect(); renderStaffSelect();
+    const _cb=document.getElementById('mobile-cart-bar');
+    if(_cb&&currentPage!=='order') _cb.classList.add('cart-bar-hidden');
+    updateCartInfo();
+    _startOrdersPoll();
+  })
+  .catch(function(e){ console.error('initApp:',e); });
 }
 
 function _roleLabel(role){
