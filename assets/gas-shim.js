@@ -3,7 +3,7 @@
 // Restaurant OS MySQL Edition
 // ============================================================
 //const API_URL = 'https://27.131.179.220/api/api.php'; // ← เปลี่ยนถ้า URL ต่างออกไป
-const API_URL = 'http://27.131.179.220/restaurant-os/api/api.php';
+const API_URL = 'https://27.131.179.220/restaurant-os/api/api.php';
 //const API_URL = 'https://appfood.duckdns.org/restaurant-os/api/api.php';
 // Map: ชื่อฟังก์ชัน GAS → action name + รูปแบบ args
 const FN_MAP = {
